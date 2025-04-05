@@ -28,7 +28,7 @@ escape_room/status → Server responds with game progress and time.
 Escape_room/mp_assistance -> Clients in the same room can work together
 
 ## II. Architecture
-<div hidden>
+<!--
 ```
 @startuml SequenceArchitect
 participant Client
@@ -39,7 +39,7 @@ participant "Thread Pool" as ThreadPool
 activate MqttServer
 
 ' Emphasize persistent subscription
-Server --[#green]--> MqttServer : Listen
+MqttServer <--[#green]-- Server : Listen
 activate Server
 
 ' Client announces its presence (optional)
@@ -68,7 +68,7 @@ deactivate ThreadPool
 
 @enduml
 ```
-</div>
+-->
 
 ![](SequenceArchitect.svg)
 
