@@ -27,7 +27,83 @@ escape_room/hints → Server publishes hints and messages.
 escape_room/status → Server responds with game progress and time.
 Escape_room/mp_assistance -> Clients in the same room can work together
 
-## II. How-to Setup
+## II. Architecture
+<div hidden>
+```
+@startuml SequenceArchitect
+participant Client
+participant "MQTT Server" as MqttServer
+participant Server
+participant "Thread Pool" as ThreadPool
 
+activate MqttServer
+
+' Emphasize persistent subscription
+Server --[#green]--> MqttServer : Listen
+activate Server
+
+' Client announces its presence (optional)
+activate Client
+Client -> MqttServer : Client Connect
+MqttServer -> Server : (forward) Client Connect
+Server -> Server : Check availability
+
+' Server receives and manages thread
+Server -> ThreadPool : Acquire/Create Thread for Task
+activate ThreadPool
+ThreadPool -> MqttServer : ACK
+MqttServer -> Client : (forward) ACK
+
+Client -> MqttServer : Request Service
+MqttServer -> ThreadPool : (forward) Request Service
+
+ThreadPool -> ThreadPool : Process Task
+ThreadPool -> MqttServer : Return Service
+MqttServer -> Client : (forward) Return Service
+
+Client -> MqttServer : Client Close
+deactivate Client
+MqttServer -> ThreadPool : (forward) Client Close
+deactivate ThreadPool
+
+@enduml
+```
+</div>
+
+![](SequenceArchitect.svg)
+
+## III. How-to Setup
+
+
+
+## IV. Configuration
+
+
+
+## V. Project Structure
+
+
+## VI. MQTT Topics
+### *Client-side*
+#### push
+- escape_room/commands?/*username → Client sends player actions.
+- Escape_room/mp_assistance/*room -> Clients in the same room can work together
+
+#### subscribe
+- escape_room/hints/*username → Server publishes hints and messages.
+- escape_room/status/*username → Server responds with game progress and time.
+- Escape_room/mp_assistance/*room -> Clients in the same room can work together
+
+### *Server-side*
+#### push
+- escape_room/commands!/*username → 
+- escape_room/hints/*username → Server publishes hints and messages.
+- escape_room/status → Server responds with game progress and time.
+
+#### subscribe
+- escape_room/commands → Server listens for new players.
+
+*Thread*
+- escape_room/commands/*username → Client sends player actions, asks for hints or status updates.
 
 
