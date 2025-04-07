@@ -31,12 +31,16 @@ Escape_room/mp_assistance → Clients in the same room can work together
 <!--
 ```
 @startuml SequenceArchitect
-skinparam BackgroundColor #AliceBlue
+skinparam BackgroundColor #AliceBluegit
+
 
 participant Client
 participant "MQTT Server" as MqttServer
-participant Server
+box Server
+skinparam BackgroundColor grey
+participant "Event Handler" as Server
 participant "Thread Pool" as ThreadPool
+end box
 
 activate MqttServer
 
