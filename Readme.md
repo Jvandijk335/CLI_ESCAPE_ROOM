@@ -236,27 +236,19 @@ This section is for players who use the game via the terminal. Below you can see
 
 ### Available Commands
 
-| Action                    | Input                             | Description                                                          |
-|---------------------------|-----------------------------------|----------------------------------------------------------------------|
-| Move                      | `move north`                      | Move to a different room in a specific direction.                    |
-| Interact                  | `use key`                         | Use an item from your inventory in the current room.                 |
-| Ask for Hint              | `hint`                            | Receive a hint for your current room or situation.                   |
-| Check Status              | `status`                          | Check your progress, remaining time, and current room information.   |
-| Solve Puzzle              | `solve 2419`                      | Solve a puzzle by entering the correct solution.                     |
-| Chat                      | `say "I found a key!"`            | Send a message to your teammates or other players in the room.       |
-| Examine                   | `examine painting`                | Examine a specific object or item in the room for clues.             |
-| Pick Up                   | `pick up lantern`                 | Pick up an item in the room and add it to your inventory.            |
-| Drop Item                 | `drop key`                        | Drop an item from your inventory in the room.                        |
-| View Inventory            | `inventory`                       | Check the items in your current inventory.                           |
-| Combine Items             | `combine key with rope`           | Combine two or more items from your inventory.                       |
-| Look Around               | `look around`                     | Look around your current room to gather more information.            |
-| Use Door                  | `use door`                        | Attempt to open or interact with a door or entryway in the room.     |
-| Unlock Door               | `unlock door with key`            | Unlock a door using an item from your inventory (e.g., a key).       |
-| Activate Mechanism        | `activate lever`                  | Activate a mechanism or contraption in the room.                     |
-| Read Object               | `read book`                       | Read text or instructions on an object (e.g., a book, note, etc.).   |
-| Inspect Item              | `inspect key`                     | Get a description or details about an item in your inventory.        |
-| Ask for Help              | `help`                            | Request a list of available commands and help with the game.         |
-| Search Room               | `search room`                     | Search the entire room for hidden clues, objects, or passages.       |
+| Action    | Input                  | Description                            |
+| --------- | ---------------------- | -------------------------------------- |
+| Move      | `move room101`         | Move to a different room.              |
+| Interact  | `interact with key`    | Interact with an item.                 |
+| Inspect   | `inspect lantern`      | Inspect an item.                       |
+| Pick Up   | `pick up lantern`      | Pick up an item.                       |
+| Inventory | `view inventory`       | Check your items.                      |
+| Solve     | `solve puzzle 2419`    | Solve a puzzle.                        |
+| Chat      | `say "I found a key!"` | Talk to others in the chat.            |
+| Search    | `search room`          | Search the room for items or clues.    |
+| Hint      | `get hint`             | Get a hint for your current situation. |
+| Status    | `check status`         | View your current status.              |
+
 
 ### Examples
 
