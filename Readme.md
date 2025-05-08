@@ -18,16 +18,21 @@
          ==============================================
 ```
 
-## I. Command Line Escape Room
-This is a escape room that fully runs in the command-line interface (terminal).  
+## Overview
+CLI Escape Room is a multiplayer text-based puzzle adventure that runs entirely in your terminal. Players must collaborate, explore rooms, solve puzzles, and escape before time runs out.
 
+## 🧱 Project Structure
 
-escape_room/commands → Client sends player actions.
-escape_room/hints → Server publishes hints and messages.
-escape_room/status → Server responds with game progress and time.
-Escape_room/mp_assistance → Clients in the same room can work together
+```
+Client_app/
+├── 
 
-## II. Architecture
+Server_app/
+├──
+
+```
+
+## 🧠 Architecture
 
 ### Sequence diagram
 <!--
@@ -100,70 +105,40 @@ package "Client" {
     --
     + void sendCommand(const std::string& command)
     + void move(const std::string& direction)
-    + void interact(const std::string& item)
-    + void requestHint()
-    + void requestStatus()
-    + void solvePuzzle(const std::string& solution)
-    + void chat(const std::string& message)
-    + void examine(const std::string& object)
-    + void pickUp(const std::string& item)
-    + void dropItem(const std::string& item)
-    + void viewInventory()
-    + void combineItems(const std::string& item1, const std::string& item2)
+    + void interact(const std::string& target)
+    + void inspect(const std::string& object)
+    + void manageInventory(const std::string& action, const std::string& item)
+    + void requestHelp()
     + void lookAround()
-    + void useDoor()
-    + void unlockDoor(const std::string& item)
-    + void activateMechanism(const std::string& mechanism)
-    + void readObject(const std::string& object)
-    + void inspectItem(const std::string& item)
-    + void askForHelp()
-    + void searchRoom()
+    + std::string joinChatRoom()
+
   }
 }
 
 package "Server" {
   class GameServer {
     + GameManager gameLogic
-    + ThreadPool threadPool
+    + std::unordered_map<std::string, std::thread> clientThreads
     --
     + void handlePlayerConnect(const std::string& username)
   }
 
-  class ThreadPool {
-    + int maxThreads
-    + GameManager& gameManager
-    --
-    + void execute(std::function<void()> task)
-    + void processClientRequest(const std::string& username, const std::string& topic, const std::string& message)
-  }
-
   class GameManager {
-    + std::vector<Room> rooms
+    + std::vector<Room> roomTemplates
     + std::unordered_map<std::string, PlayerSession> players
     --
     + void initializeGame()
     + void movePlayer(PlayerSession& session, const std::string& direction)
-    + bool checkPuzzle(PlayerSession& session, const std::string& solution)
+    + std::string handleAction(PlayerSession& session, const std::string& action, const std::string& target)
     + std::string getHint(PlayerSession& session)
     + std::string getStatus(PlayerSession& session)
-    + void handleCollaboration(const std::string& room, const std::string& username, const std::string& message)
-    + std::string handleInteraction(PlayerSession& session, const std::string& action, const std::string& target)
-    + std::string handleExamine(PlayerSession& session, const std::string& object)
-    + std::string handlePickup(PlayerSession& session, const std::string& item)
-    + std::string handleDrop(PlayerSession& session, const std::string& item)
-    + std::vector<Item> handleInventory(PlayerSession& session)
-    + std::string handleCombine(PlayerSession& session, const std::string& item1, const std::string& item2)
-    + std::string handleLookAround(PlayerSession& session)
-    + std::string handleUseDoor(PlayerSession& session)
-    + std::string handleUnlockDoor(PlayerSession& session, const std::string& item)
-    + std::string handleActivate(PlayerSession& session, const std::string& mechanism)
-    + std::string handleRead(PlayerSession& session, const std::string& object)
-    + std::string handleInspect(PlayerSession& session, const std::string& item)
-    + std::string handleSearch(PlayerSession& session)
+    + std::string getChatTopic(PlayerSession& session)
+
   }
 
   class PlayerSession {
     + std::string username
+    + Room personalRoom
     + std::chrono::system_clock::time_point lastActivityTime
     --
     + std::string processCommand(const std::string& command)
@@ -180,7 +155,7 @@ package "Server" {
     + std::vector<std::string> connectedPlayers
     --
     + std::string describeRoom(const PlayerSession& session)
-    + std::string handleInteraction(PlayerSession& session, const std::string& action)
+    + std::string interact(PlayerSession& session, const std::string& action)
   }
 
   class Puzzle {
@@ -204,11 +179,10 @@ package "Server" {
 
 ' Relationships
 Player --o GameServer : interacts with
-GameServer --o GameManager : uses
-GameServer --o ThreadPool : delegates to
-ThreadPool --* GameManager : interacts with 
-GameManager --* Room : manages
+GameServer --* GameManager : uses
+GameManager --* Room : template for
 GameManager --* PlayerSession : manages
+PlayerSession --* Room : owns
 Room --* Puzzle : contains
 Room --* Item : contains
 
@@ -218,58 +192,36 @@ Room --* Item : contains
 
 ![](CppClassDiagram.svg)
 
-## III. How-to Setup
+## 🔧 Setup Instructions
+### Dependencies
+
+- libzmq (ZeroMQ messaging library)
+- CMake (build system)
+- pkg-config (Windows-specific build support)
+
+### Install `libzmq`
+
+1. Visit: https://github.com/zeromq/libzmq
+2. Select the v4.3.4 tag, download, and unzip.
+3. Build using CMake + MinGW:
+ - Open CMake GUI 
+ - Source dir: path to libzmq (e.g., `C:/Users/you/libzmq-4.3.4`)
+ - Build dir: same path + `/build`
+ - Configure → Select *MinGW Makefiles*
+ - Uncheck `ZMQ_BUILD_TESTS`
+ - Generate → Open terminal in `/build` folder
+ - Run: `mingw32-make -j4 install`
+
+### Install `pkg-config` (Windows Only)
+1. Download from: http://ftp.gnome.org/pub/gnome/binaries/win32/
+ - `pkg-config_0.26-1_win32.zip` → extract `pkg-config.exe` to `C:\MinGW\bin`
+ - `gettext-runtime_0.18.1.1-2_win32.zip` → extract `intl.dll` to `C:\MinGW\bin`
+ - `glib_2.28.8-1_win32.zip` → extract `libglib-2.0-0.dll` to `C:\MinGW\bin`
 
 
 
-#### Download libzmq library
-1. Go to the [libzmq](https://github.com/zeromq/libzmq) GitHub page.
-2. Select the v4.3.4 tag.
-3. Download the repository.
-4. Unzip the lib.
 
-#### Install CMake
-1. Go to [CMake](https://cmake.org/).
-2. Download the Windows x64 installer.
-3. Run the CMake installer.
-
-#### Install pkg-config [Windows]
-1. Go to [http://ftp.gnome.org/pub/gnome/binaries/win32/dependencies/](http://ftp.gnome.org/pub/gnome/binaries/win32/dependencies/).
-2. Download the file pkg-config_0.26-1_win32.zip
-3. Extract the file bin/pkg-config.exe to C:\MinGW\bin
-4. Download the file gettext-runtime_0.18.1.1-2_win32.zip
-5. Extract the file bin/intl.dll to C:\MinGW\bin
-6. Go to [http://ftp.gnome.org/pub/gnome/binaries/win32/glib/2.28](http://ftp.gnome.org/pub/gnome/binaries/win32/glib/2.28)
-7. Download the file glib_2.28.8-1_win32.zip
-8. Extract the file bin/libglib-2.0-0.dll to C:\MinGW\bin
-
-Source: https://stackoverflow.com/questions/1710922/how-to-install-pkg-config-in-windows
-
-#### Build instructions for libzmq with MinGW
-1. Run the CMake GUI.
-2. Set the path to the libzmq directory as source directory.
-    * e.g. C:/Users/User1/Downloads/libzmq-4.3.4
-3. Set the same path as the build directory and append /build.
-    * e.g. C:/Users/User1/Downloads/libzmq-4.3.4/build
-4. Press the configure button.
-5. CMake will ask you permission to create the build directory. Click Yes.
-6. Select the MinGW Makefiles as generator for this project.
-7. Click Finish
-8. If the configuration is finished then deselect ZMQ_BUILD_TESTS and click Generate.
-9. Run a command prompt as administrator from the build directory.
-10. Enter the command `mingw32-make -j4 install` and hit enter.
-11. If the build is succesful you will see that the directory C:/Program Files (x86)/ZeroMQ is created.
-
-## IV. Configuration
-
-
-
-## V. Project Structure
-
-
-## VI. MQTT Topic Overview
-
-### Topics per Direction
+## 📡 MQTT Topic Overview
 
 | Direction       | Topic                              | Description                               |
 |----------------|-------------------------------------|-------------------------------------------|
@@ -279,7 +231,7 @@ Source: https://stackoverflow.com/questions/1710922/how-to-install-pkg-config-in
 | Server → Client | `escape_room/errors/<username>`    | Error messages (e.g., invalid command).   |
 | Bidirectional   | `escape_room/mp_assistance/<room>` | Chat between players in the same room.    |
 
-## VII. Command-Line Interface API
+## 🎮 Command-Line Interface API
 This section is for players who use the game via the terminal. Below you can see what commands you can enter and what they do.
 
 ### Available Commands
