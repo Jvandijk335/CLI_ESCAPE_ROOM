@@ -24,12 +24,40 @@ CLI Escape Room is a multiplayer text-based puzzle adventure that runs entirely 
 ## 🧱 Project Structure
 
 ```
-Client_app/
-├── 
-
-Server_app/
-├──
-
+.
+├── Client_app
+│   ├── Escaperoom_client
+│   ├── client
+│   ├── include
+│   │   └── Player.h
+│   └── src
+│       ├── Player.cpp
+│       └── ZMQquest_client.cpp
+├── LICENSE
+├── Readme.md
+├── Server_app
+│   ├── Escaperoom_s2
+│   ├── Escaperoom_server
+│   ├── include
+│   │   ├── GameManager.h
+│   │   ├── GameServer.h
+│   │   ├── Item.h
+│   │   ├── PlayerSession.h
+│   │   ├── Puzzle.h
+│   │   └── Room.h
+│   ├── server
+│   └── src
+│       ├── GameManager.cpp
+│       ├── GameServer.cpp
+│       ├── Item.cpp
+│       ├── PlayerSession.cpp
+│       ├── Puzzle.cpp
+│       ├── Room.cpp
+│       ├── ZMQquest_server.cpp
+│       └── ZMQquest_server2.0.cpp
+└── docs
+    ├── CppClassDiagram.svg
+    └── SequenceDiagram.svg
 ```
 
 ## 🧠 Architecture
@@ -83,7 +111,7 @@ deactivate ThreadPool
 ```
 -->
 
-![](SequenceDiagram.svg)
+![](./docs/SequenceDiagram.svg)
 
 ### Class diagram
 
@@ -190,7 +218,7 @@ Room --* Item : contains
 ```
 -->
 
-![](CppClassDiagram.svg)
+![](./docs/CppClassDiagram.svg)
 
 ## 🔧 Setup Instructions
 ### Dependencies
