@@ -20,7 +20,6 @@ link_directories(${PC_ZMQ_LIBRARY_DIRS})
 set(SOURCES
     src/main.cpp
     src/GameManager.cpp
-    src/GameServer.cpp
     src/Item.cpp
     src/PlayerSession.cpp
     src/Puzzle.cpp

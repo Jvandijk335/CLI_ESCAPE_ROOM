@@ -3,6 +3,7 @@
 #include <zmq.hpp>
 #include <poll.h>
 #include <unistd.h>
+#include "Player.h"
 #ifndef _WIN32
 	#include <unistd.h>
 #else
@@ -34,7 +35,7 @@ int main( void )
 
         std::string message = "escape_room>commands>" + username + "?>";
         ventilator.send(zmq::buffer(message), zmq::send_flags::dontwait);
-        std::cout << "Pushed: [" << message << "]" << std::endl;
+        std::cout << "Send Username: [" << username << "]" << std::endl;
 
         while(subscriber && ventilator){
             int events = subscriber.get(zmq::sockopt::events);
@@ -42,7 +43,15 @@ int main( void )
                 zmq::message_t msg;
                 if(subscriber.recv(msg, zmq::recv_flags::dontwait)) 
                 {
-                    std::cout << "Subscribed : [" << msg.to_string() << "]" << std::endl;
+                    std::string full_msg = msg.to_string();
+                    std::string delimiter = "!>";
+                    std::size_t pos = full_msg.find(delimiter);
+                    if (pos != std::string::npos && pos + delimiter.length() < full_msg.length()) {
+                        std::string content = full_msg.substr(pos + delimiter.length());
+                        std::cout << "Subscriber: " << content << std::endl;
+                    } else {
+                        std::cout << "Malformed message or no content after '!>'" << std::endl;
+                    }
                 }
                 else perror("recv");
             }
@@ -60,7 +69,7 @@ int main( void )
 
                 std::string msg = "escape_room>commands>" + username + "?>" + input;
                 ventilator.send(zmq::buffer(msg), zmq::send_flags::dontwait);
-                std::cout << "Sent: [" << msg << "]" << std::endl;
+                //std::cout << "Sent: [" << msg << "]" << std::endl;
             }
         }
     }

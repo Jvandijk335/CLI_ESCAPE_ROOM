@@ -4,6 +4,7 @@
 #include <regex>
 #include <poll.h>
 #include <unistd.h>
+#include "GameManager.h"
 
 int main() {
     try {
@@ -18,6 +19,9 @@ int main() {
 
         std::cout << "Server running. Listening for messages..." << std::endl;
 
+        GameManager gameManager;
+        gameManager.initializeGame();
+
         while (subscriber && pusher) {
             int events = subscriber.get(zmq::sockopt::events);
             if(events & ZMQ_POLLIN){
@@ -25,23 +29,30 @@ int main() {
                 if(subscriber.recv(msg, zmq::recv_flags::none))
                 {
                     std::string received = msg.to_string();
-                    std::cout << "Received: " << received << std::endl;
 
-                    // Match pattern: escape_room>commands>USERNAME?>...
-                    std::regex pattern(R"(escape_room>commands>([^>]+)\?>)");
+                    // Match pattern: escape_room>commands>USERNAME?>COMMAND
+                    std::regex pattern(R"(escape_room>commands>([^>]+)\?>(.*))");
                     std::smatch match;
 
-                    if (std::regex_search(received, match, pattern) && match.size() > 1) {
+                    if (std::regex_search(received, match, pattern) && match.size() >= 2) {
                         std::string username = match[1];
-                        std::string response = "escape_room>commands>" + username + "!>Hello " + username + ", your message was received.";
+                        std::string command = match.size() > 2 ? std::string(match[2]) : "";
                         
-                        pusher.send(zmq::buffer(response), zmq::send_flags::none);
+                       
+                        std::string response;
+                        if (command.empty()) {
+                            response = gameManager.handleMessage(username);
+                        } else {
+                            response = gameManager.handleMessage(username, command);
+                        }
+                        
+                        std::string topic = "escape_room>commands>" + username + "!>" + response;
+                        pusher.send(zmq::buffer(topic), zmq::send_flags::none);
                         std::cout << "Responded to " << username << std::endl;
                     }
                 }
                 else perror("recv");     
-            }
-            
+            }            
             
             struct pollfd fds;
             fds.fd = STDIN_FILENO;

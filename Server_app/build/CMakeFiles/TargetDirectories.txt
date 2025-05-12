@@ -1,3 +1,0 @@
-/mnt/c/Users/jvand/Documents/Syn-Dijk(ICT)/SynologyDrive/Study/PXL_Hogeschool/Network Programming/Escaperoom/Server_app/build/CMakeFiles/EscapeRoomServer.dir
-/mnt/c/Users/jvand/Documents/Syn-Dijk(ICT)/SynologyDrive/Study/PXL_Hogeschool/Network Programming/Escaperoom/Server_app/build/CMakeFiles/edit_cache.dir
-/mnt/c/Users/jvand/Documents/Syn-Dijk(ICT)/SynologyDrive/Study/PXL_Hogeschool/Network Programming/Escaperoom/Server_app/build/CMakeFiles/rebuild_cache.dir

@@ -1,14 +1,11 @@
-#ifndef PLAYER_H
-#define PLAYER_H
-
+#pragma once
 #include <string>
 
 class Player {
 public:
-    // Constructor
-    Player(const std::string& username);
+    std::string username;
+    std::string currentRoom;
 
-    // Acties die de speler kan uitvoeren
     void sendCommand(const std::string& command);
     void move(const std::string& direction);
     void interact(const std::string& target);
@@ -17,10 +14,4 @@ public:
     void requestHelp();
     void lookAround();
     std::string joinChatRoom();
-
-private:
-    std::string username;
-    std::string currentRoom;
 };
-
-#endif

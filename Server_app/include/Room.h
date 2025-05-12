@@ -1,23 +1,21 @@
-#ifndef ROOM_H
-#define ROOM_H
-
+#pragma once
 #include <string>
 #include <vector>
 #include "Puzzle.h"
 #include "Item.h"
-#include "PlayerSession.h"
+
+class PlayerSession;
 
 class Room {
 public:
+    Room(const std::string& name, const std::string& description);
     std::string describeRoom(const PlayerSession& session);
     std::string interact(PlayerSession& session, const std::string& action);
+
+    std::vector<Puzzle> puzzles;
+    std::vector<Item> items;
 
 private:
     std::string name;
     std::string description;
-    std::vector<Puzzle> puzzles;
-    std::vector<Item> items;
-    std::vector<std::string> connectedPlayers;
 };
-
-#endif

@@ -1,10 +1,9 @@
-#ifndef ITEM_H
-#define ITEM_H
-
+#pragma once
 #include <string>
 
 class Item {
 public:
+    Item(const std::string& name, const std::string& description, bool isUsable);
     std::string use();
 
 private:
@@ -12,5 +11,3 @@ private:
     std::string description;
     bool isUsable;
 };
-
-#endif
