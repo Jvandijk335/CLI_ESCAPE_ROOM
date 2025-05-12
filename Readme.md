@@ -26,18 +26,29 @@ CLI Escape Room is a multiplayer text-based puzzle adventure that runs entirely 
 ```
 .
 ├── Client_app
-│   ├── Escaperoom_client
-│   ├── client
+│   ├── CMakeLists.txt
+│   ├── build
+│   │   ├── CMakeCache.txt
+│   │   ├── CMakeFiles
+│   │   ├── EscapeRoomClient -> binary file
+│   │   ├── Makefile
+│   │   ├── cmake_install.cmake
+│   │   └── libPlayerLib.a
 │   ├── include
 │   │   └── Player.h
 │   └── src
 │       ├── Player.cpp
-│       └── ZMQquest_client.cpp
+│       └── main.cpp
 ├── LICENSE
 ├── Readme.md
 ├── Server_app
-│   ├── Escaperoom_s2
-│   ├── Escaperoom_server
+│   ├── CMakeLists.txt
+│   ├── build
+│   │   ├── CMakeCache.txt
+│   │   ├── CMakeFiles
+│   │   ├── EscapeRoomServer  -> binary file
+│   │   ├── Makefile
+│   │   └── cmake_install.cmake
 │   ├── include
 │   │   ├── GameManager.h
 │   │   ├── GameServer.h
@@ -45,7 +56,6 @@ CLI Escape Room is a multiplayer text-based puzzle adventure that runs entirely 
 │   │   ├── PlayerSession.h
 │   │   ├── Puzzle.h
 │   │   └── Room.h
-│   ├── server
 │   └── src
 │       ├── GameManager.cpp
 │       ├── GameServer.cpp
@@ -53,8 +63,8 @@ CLI Escape Room is a multiplayer text-based puzzle adventure that runs entirely 
 │       ├── PlayerSession.cpp
 │       ├── Puzzle.cpp
 │       ├── Room.cpp
-│       ├── ZMQquest_server.cpp
-│       └── ZMQquest_server2.0.cpp
+│       └── main.cpp
+├── build_all.sh
 └── docs
     ├── CppClassDiagram.svg
     └── SequenceDiagram.svg
@@ -68,45 +78,42 @@ CLI Escape Room is a multiplayer text-based puzzle adventure that runs entirely 
 @startuml SequenceDiagram
 skinparam BackgroundColor #AliceBluegit
 
-
+box Client_App
+skinparam BackgroundColor grey
 participant Client
-participant "MQTT Server" as MqttServer
-box Server
+end box
+participant "ZeroMQ Server" as ZeroMQServer
+box Server_App
 skinparam BackgroundColor grey
 participant "Event Handler" as Server
-participant "Thread Pool" as ThreadPool
 end box
 
-activate MqttServer
+activate ZeroMQServer
 
 ' Emphasize persistent subscription
-MqttServer <--[#green]-- Server : Listen
+ZeroMQServer <--[#green]-- Server : Listen
 activate Server
 
 ' Client announces its presence (optional)
 activate Client
-Client -> MqttServer : Client Connect
-MqttServer -> Server : (forward) Client Connect
+Client -> ZeroMQServer : Client Connect
+ZeroMQServer -> Server : (forward) Client Connect
 Server -> Server : Check availability
 
-' Server receives and manages thread
-Server -> ThreadPool : Acquire/Create Thread for Task
-activate ThreadPool
-ThreadPool -> MqttServer : ACK
-MqttServer -> Client : (forward) ACK
+' Server receives and manages connection
+Server -> ZeroMQServer : ACK
+ZeroMQServer -> Client : (forward) ACK
 
-Client -> MqttServer : Request Service
-MqttServer -> ThreadPool : (forward) Request Service
+Client -> ZeroMQServer : Request Service
+ZeroMQServer -> Server : (forward) Request Service
 
-ThreadPool -> ThreadPool : Process Task
-ThreadPool -> MqttServer : Return Service
-MqttServer -> Client : (forward) Return Service
+Server -> Server : Process Task
+Server -> ZeroMQServer : Return Service
+ZeroMQServer -> Client : (forward) Return Service
 
-Client -> MqttServer : Client Close
+Client -> ZeroMQServer : Client Close
 deactivate Client
-MqttServer -> ThreadPool : (forward) Client Close
-deactivate ThreadPool
-
+ZeroMQServer -> Server : (forward) Client Close
 @enduml
 ```
 -->
@@ -126,94 +133,68 @@ skinparam class {
   ArrowColor DarkSlateGray
 }
 
-package "Client" {
-  class Player {
-    + std::string username
-    + std::string currentRoom
-    --
-    + void sendCommand(const std::string& command)
-    + void move(const std::string& direction)
-    + void interact(const std::string& target)
-    + void inspect(const std::string& object)
-    + void manageInventory(const std::string& action, const std::string& item)
-    + void requestHelp()
-    + void lookAround()
-    + std::string joinChatRoom()
-
-  }
-}
-
 package "Server" {
-  class GameServer {
-    + GameManager gameLogic
-    + std::unordered_map<std::string, std::thread> clientThreads
-    --
-    + void handlePlayerConnect(const std::string& username)
-  }
-
   class GameManager {
-    + std::vector<Room> roomTemplates
-    + std::unordered_map<std::string, PlayerSession> players
-    --
     + void initializeGame()
-    + void movePlayer(PlayerSession& session, const std::string& direction)
-    + std::string handleAction(PlayerSession& session, const std::string& action, const std::string& target)
-    + std::string getHint(PlayerSession& session)
-    + std::string getStatus(PlayerSession& session)
-    + std::string getChatTopic(PlayerSession& session)
-
+    + std::string handleMessage(const std::string &username)
+    + std::string handleMessage(const std::string &username, const std::string &message)
+    --
+    - std::vector<Room> roomTemplates
+    - std::unordered_map<std::string, PlayerSession> players
   }
 
   class PlayerSession {
-    + std::string username
-    + Room personalRoom
-    + std::chrono::system_clock::time_point lastActivityTime
-    --
+    + <<constructor>> PlayerSession(const std::string& username, const Room& room)
     + std::string processCommand(const std::string& command)
     + std::string getHint()
     + std::string getStatus()
     + std::string executeAction(const std::string& action, const std::string& target)
+    + std::string move(const std::string& direction)
+    + std::string getChatTopic()
+    --
+    - std::string username
+    - Room personalRoom
+    - std::chrono::system_clock::time_point lastActivityTime
   }
 
   class Room {
-    + std::string name
-    + std::string description
-    + std::vector<Puzzle> puzzles
-    + std::vector<Item> items
-    + std::vector<std::string> connectedPlayers
-    --
+    + <<constructor>> Room(const std::string& name, const std::string& description)
     + std::string describeRoom(const PlayerSession& session)
     + std::string interact(PlayerSession& session, const std::string& action)
+    --
+    - std::string name
+    - std::string description
+    - std::vector<Puzzle> puzzles
+    - std::vector<Item> items
   }
 
   class Puzzle {
-    + std::string name
-    + std::string description
-    + std::string solution
-    + bool isSolved
-    --
+    + <<constructor>> Puzzle(const std::string& name, const std::string& description, const std::string& solution)
     + bool attemptSolution(const std::string& input)
     + std::string getClue()
+    --
+    - std::string name
+    - std::string description
+    - std::string solution
+    - bool isSolved
   }
 
   class Item {
-    + std::string name
-    + std::string description
-    + bool isUsable
-    --
+    + <<constructor>> Item(const std::string& name, const std::string& description, bool isUsable)
     + std::string use()
+    --
+    - std::string name
+    - std::string description
+    - bool isUsable
   }
 }
 
 ' Relationships
-Player --o GameServer : interacts with
-GameServer --* GameManager : uses
 GameManager --* Room : template for
 GameManager --* PlayerSession : manages
 PlayerSession --* Room : owns
 Room --* Puzzle : contains
 Room --* Item : contains
-
 @enduml
 ```
 -->
@@ -253,7 +234,8 @@ Room --* Item : contains
 
 | Direction       | Topic                              | Description                               |
 |----------------|-------------------------------------|-------------------------------------------|
-| Client → Server | `escape_room/commands/<username>`  | Send player commands (e.g., move, solve). |
+| Client → Server | `escape_room/commands/<username>?` | Send player commands (e.g., move, solve). |
+| Server → Client | `escape_room/commands/<username>!` | Send server response                      |
 | Server → Client | `escape_room/status/<username>`    | Send room status and game info.           |
 | Server → Client | `escape_room/hints/<username>`     | Server-sent hints or clues.               |
 | Server → Client | `escape_room/errors/<username>`    | Error messages (e.g., invalid command).   |
