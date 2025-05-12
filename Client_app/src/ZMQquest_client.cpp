@@ -28,11 +28,21 @@ int main(void)
         std::getline(std::cin, username);
         std::cout << "Hello " << username << std::endl;
 
-        auto thread1 = std::async(std::launch::async, PushThread, &context, username);
-        auto thread2 = std::async(std::launch::async, SubscriberThread, &context, username);
+        // Prepare PUSH socket voor het versturen van berichten
+        zmq::socket_t ventilator(context, zmq::socket_type::push);
 
-        thread1.wait();
-        thread2.wait();
+        int rc = -1;
+        rc = ventilator.connect("tcp://benternet.pxl-ea-ict.be:24041");
+        assert(rc == 0);   
+        std::cout << "Connected to tcp://benternet.pxl-ea-ict.be:24041" << std::endl;
+
+        // PUSH bericht sturen
+        std::string message = "EscapeRoom>Room?>" + username + ">"; //example>quest?>Joep van Dijk>  EscapeRoom>Room?>
+        ventilator.send(zmq::buffer(message), zmq::send_flags::dontwait);
+        std::cout << "Pushed: [" << message << "]" << std::endl;
+      
+
+        
     }
     catch (zmq::error_t &ex)
     {
@@ -43,18 +53,7 @@ int main(void)
 }
 
 void PushThread(zmq::context_t *ctx, std::string username) { 
-    // Prepare PUSH socket voor het versturen van berichten
-    zmq::socket_t ventilator(*ctx, zmq::socket_type::push);
-
-    int rc = -1;
-    rc = ventilator.connect("tcp://benternet.pxl-ea-ict.be:24041");
-    assert(rc == 0);   
-    std::cout << "Connected to tcp://benternet.pxl-ea-ict.be:24041" << std::endl;
-
-    // PUSH bericht sturen
-    std::string message = "EscapeRoom>Room?>" + username + ">"; //example>quest?>Joep van Dijk>  EscapeRoom>Room?>
-    ventilator.send(zmq::buffer(message), zmq::send_flags::dontwait);
-    std::cout << "Pushed: [" << message << "]" << std::endl;
+    
 }
 
 void SubscriberThread(zmq::context_t *ctx, std::string username) {

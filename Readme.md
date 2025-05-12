@@ -68,45 +68,42 @@ CLI Escape Room is a multiplayer text-based puzzle adventure that runs entirely 
 @startuml SequenceDiagram
 skinparam BackgroundColor #AliceBluegit
 
-
+box Client_App
+skinparam BackgroundColor grey
 participant Client
-participant "MQTT Server" as MqttServer
-box Server
+end box
+participant "ZeroMQ Server" as ZeroMQServer
+box Server_App
 skinparam BackgroundColor grey
 participant "Event Handler" as Server
-participant "Thread Pool" as ThreadPool
 end box
 
-activate MqttServer
+activate ZeroMQServer
 
 ' Emphasize persistent subscription
-MqttServer <--[#green]-- Server : Listen
+ZeroMQServer <--[#green]-- Server : Listen
 activate Server
 
 ' Client announces its presence (optional)
 activate Client
-Client -> MqttServer : Client Connect
-MqttServer -> Server : (forward) Client Connect
+Client -> ZeroMQServer : Client Connect
+ZeroMQServer -> Server : (forward) Client Connect
 Server -> Server : Check availability
 
-' Server receives and manages thread
-Server -> ThreadPool : Acquire/Create Thread for Task
-activate ThreadPool
-ThreadPool -> MqttServer : ACK
-MqttServer -> Client : (forward) ACK
+' Server receives and manages connection
+Server -> ZeroMQServer : ACK
+ZeroMQServer -> Client : (forward) ACK
 
-Client -> MqttServer : Request Service
-MqttServer -> ThreadPool : (forward) Request Service
+Client -> ZeroMQServer : Request Service
+ZeroMQServer -> Server : (forward) Request Service
 
-ThreadPool -> ThreadPool : Process Task
-ThreadPool -> MqttServer : Return Service
-MqttServer -> Client : (forward) Return Service
+Server -> Server : Process Task
+Server -> ZeroMQServer : Return Service
+ZeroMQServer -> Client : (forward) Return Service
 
-Client -> MqttServer : Client Close
+Client -> ZeroMQServer : Client Close
 deactivate Client
-MqttServer -> ThreadPool : (forward) Client Close
-deactivate ThreadPool
-
+ZeroMQServer -> Server : (forward) Client Close
 @enduml
 ```
 -->
@@ -253,7 +250,8 @@ Room --* Item : contains
 
 | Direction       | Topic                              | Description                               |
 |----------------|-------------------------------------|-------------------------------------------|
-| Client → Server | `escape_room/commands/<username>`  | Send player commands (e.g., move, solve). |
+| Client → Server | `escape_room/commands/<username>?` | Send player commands (e.g., move, solve). |
+| Server → Client | `escape_room/commands/<username>!` | Send server response                      |
 | Server → Client | `escape_room/status/<username>`    | Send room status and game info.           |
 | Server → Client | `escape_room/hints/<username>`     | Server-sent hints or clues.               |
 | Server → Client | `escape_room/errors/<username>`    | Error messages (e.g., invalid command).   |
