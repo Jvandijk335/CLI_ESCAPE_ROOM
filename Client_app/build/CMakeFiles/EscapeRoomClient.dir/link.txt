@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/EscapeRoomClient.dir/src/main.cpp.o -o EscapeRoomClient   -L/usr/local/lib  -Wl,-rpath,/usr/local/lib libPlayerLib.a -lzmq 
