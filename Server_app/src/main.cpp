@@ -22,8 +22,12 @@ int main() {
         GameManager gameManager;
         gameManager.initializeGame();
 
+        int events;
+        struct pollfd fds;
+        int ret;
+
         while (subscriber && pusher) {
-            int events = subscriber.get(zmq::sockopt::events);
+            events = subscriber.get(zmq::sockopt::events);
             if(events & ZMQ_POLLIN){
                 zmq::message_t msg;
                 if(subscriber.recv(msg, zmq::recv_flags::none))
@@ -54,11 +58,11 @@ int main() {
                 else perror("recv");     
             }            
             
-            struct pollfd fds;
+            
             fds.fd = STDIN_FILENO;
             fds.events = POLLIN;
 
-            int ret = poll(&fds, 1, 0); // timeout = 0 (non-blocking)
+            ret = poll(&fds, 1, 0);
             if (ret > 0 && (fds.revents & POLLIN)) {
                 std::string input;
                 std::getline(std::cin, input);

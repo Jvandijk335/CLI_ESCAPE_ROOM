@@ -13,8 +13,8 @@ void GameManager::initializeGame() {
     Room room2("Kitchen", "A modern kitchen with stainless steel appliances.");
     
     // Room 1: Library with puzzles and items
-    Puzzle puzzle1("Book Puzzle", "Find the correct book to unlock a secret compartment.", "The Hobbit");
-    Puzzle puzzle2("Code Puzzle", "Solve the code to get the combination.", "1234");
+    Puzzle puzzle1("Book_Puzzle", "Find the correct book to unlock a secret compartment.", 1998);
+    Puzzle puzzle2("Code_Puzzle", "Solve the code to get the combination.", 1234);
     Item item1("Key", "A rusty old key.", true);
     Item item2("Book", "A strange looking book.", true);
     room1.puzzles.push_back(puzzle1);
@@ -23,7 +23,7 @@ void GameManager::initializeGame() {
     room1.items.push_back(item2);
     
     // Room 2: Kitchen with puzzles and items
-    Puzzle puzzle3("Recipe Puzzle", "Recreate the recipe to unlock a clue.", "Apple Pie");
+    Puzzle puzzle3("Recipe_Puzzle", "Recreate the recipe to unlock a clue.", 42123);
     Item item3("Knife", "A sharp kitchen knife.", true);
     Item item4("Recipe Book", "A book of secret recipes.", true);
     room2.puzzles.push_back(puzzle3);
@@ -41,7 +41,6 @@ void GameManager::initializeGame() {
 std::string GameManager::handleMessage(const std::string& username) {
     std::cout << "Player connecting: " << username << std::endl;
     
-    // Check if the player already exists
     if (players.find(username) != players.end()) {
         return "Player already connected!";
     }
@@ -53,7 +52,7 @@ std::string GameManager::handleMessage(const std::string& username) {
     std::string response = "Welcome " + username + "! You can now start interacting.";
 
     if (!startingRoom.describeRoom(players[username]).empty()) {
-        response += "\nRoom description: " + startingRoom.describeRoom(players[username]);
+        response += "\n" + startingRoom.describeRoom(players[username]);
     } 
     else { 
         response += "\nNo rooms available at the moment.";
@@ -73,14 +72,7 @@ std::string GameManager::handleMessage(const std::string& username, const std::s
     std::string command;
     iss >> command;
     std::string args;
-    std::getline(iss, args);
-
-    size_t pos = args.find_first_not_of(' ');
-    if (pos != std::string::npos) {
-        args = args.substr(pos);  
-    } else {
-        args.clear();  
-    }
+    std::getline(iss >> std::ws, args);
 
     std::unordered_map<std::string, std::function<std::string(const std::string&)>> commandHandlers;
 
@@ -93,8 +85,17 @@ std::string GameManager::handleMessage(const std::string& username, const std::s
     commandHandlers["status"] = [&](const std::string&) {
         return session.getStatus();
     };
+    commandHandlers["joinchat"] = [&](const std::string&) {
+        return session.joinChat();
+    };
     commandHandlers["interact"] = [&](const std::string& args) {
         return session.executeAction("interact", args);
+    };
+    commandHandlers["search"] = [&](const std::string& args) {
+        return session.executeAction("search", args);
+    };
+    commandHandlers["solve"] = [&](const std::string& args) {
+        return session.executeAction("solve", args);
     };
 
     auto it = commandHandlers.find(command);
@@ -103,7 +104,4 @@ std::string GameManager::handleMessage(const std::string& username, const std::s
     }
 
     return "Error: Unknown command!";
-
-
-    return "";
 }

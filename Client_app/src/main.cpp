@@ -3,7 +3,6 @@
 #include <zmq.hpp>
 #include <poll.h>
 #include <unistd.h>
-#include "Player.h"
 #ifndef _WIN32
 	#include <unistd.h>
 #else
@@ -37,8 +36,12 @@ int main( void )
         ventilator.send(zmq::buffer(message), zmq::send_flags::dontwait);
         std::cout << "Send Username: [" << username << "]" << std::endl;
 
+        struct pollfd fds;
+        int events;
+        int ret;
+
         while(subscriber && ventilator){
-            int events = subscriber.get(zmq::sockopt::events);
+            events = subscriber.get(zmq::sockopt::events);
             if(events & ZMQ_POLLIN){
                 zmq::message_t msg;
                 if(subscriber.recv(msg, zmq::recv_flags::dontwait)) 
@@ -56,11 +59,10 @@ int main( void )
                 else perror("recv");
             }
 
-            struct pollfd fds;
             fds.fd = STDIN_FILENO;
             fds.events = POLLIN;
 
-            int ret = poll(&fds, 1, 0); // timeout = 0 (non-blocking)
+            ret = poll(&fds, 1, 0); 
             if (ret > 0 && (fds.revents & POLLIN)) {
                 std::string input;
                 std::getline(std::cin, input);
