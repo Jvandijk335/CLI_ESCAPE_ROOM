@@ -16,11 +16,8 @@ find_path(CPPZMQ_INCLUDE_DIRS zmq.hpp)
 include_directories(${PC_ZMQ_INCLUDE_DIRS} ${CPPZMQ_INCLUDE_DIRS})
 link_directories(${PC_ZMQ_LIBRARY_DIRS})
 
-# Add the Player library
-add_library(PlayerLib src/Player.cpp)
-
 # Main executable
 add_executable(${PROJECT_NAME} src/main.cpp)
 
 # Link libraries
-target_link_libraries(${PROJECT_NAME} PlayerLib ${PC_ZMQ_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${PC_ZMQ_LIBRARIES})

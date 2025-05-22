@@ -7,3 +7,7 @@ Item::Item(const std::string& name, const std::string& description, bool isUsabl
 std::string Item::use() {
     return isUsable ? "Using item: " + name : "Item is not usable";
 }
+
+std::string Item::getName() const {
+    return this->name;
+}

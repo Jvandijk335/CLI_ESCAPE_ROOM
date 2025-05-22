@@ -3,13 +3,14 @@
 
 class Puzzle {
 public:
-    Puzzle(const std::string& name, const std::string& description, const std::string& solution);
+    Puzzle(const std::string& name, const std::string& description, const int& solution);
     bool attemptSolution(const std::string& input);
     std::string getClue();
+    std::string getName() const;
 
 private:
     std::string name;
     std::string description;
-    std::string solution;
+    int solution;
     bool isSolved;
 };
