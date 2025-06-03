@@ -11,3 +11,11 @@ std::string Room::describeRoom(const PlayerSession& session) {
 std::string Room::interact(PlayerSession& session, const std::string& action) {
     return "Interacted with action: " + action;
 }
+
+std::string Room::getHint() {
+    if(hints.empty()) return "No hints available";
+    if(currentHintIndex >= hints.size()) {
+        currentHintIndex = 0;
+    }
+    return hints[currentHintIndex++];
+}

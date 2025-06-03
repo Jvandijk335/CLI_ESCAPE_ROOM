@@ -12,7 +12,7 @@ PlayerSession::PlayerSession(const std::string& username, const Room& room)
 }
 
 std::string PlayerSession::getHint() {
-    return "Here's your hint.";
+    return personalRoom->getHint(); 
 }
 
 std::string PlayerSession::getStatus() {
@@ -32,7 +32,9 @@ std::string PlayerSession::getStatus() {
         std::to_string(seconds) + "s ";
 }
 
-
+std::string PlayerSession::getUsername() const {
+    return this->username;
+}
 
 std::string PlayerSession::move(const std::string& direction) {
     return "Moved to: " + direction;

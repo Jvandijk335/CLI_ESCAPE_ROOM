@@ -30,7 +30,9 @@ int main( void )
         std::cout << "Connected to tcp://benternet.pxl-ea-ict.be:24042" << std::endl;
 
         std::string sub = "escape_room>commands>" + username + "!>";
+        std::string chatsub = "escape_room>chat>" + username + "!>";
         subscriber.set(zmq::sockopt::subscribe, sub);
+        subscriber.set(zmq::sockopt::subscribe, chatsub);
 
         std::string message = "escape_room>commands>" + username + "?>";
         ventilator.send(zmq::buffer(message), zmq::send_flags::dontwait);
@@ -51,7 +53,7 @@ int main( void )
                     std::size_t pos = full_msg.find(delimiter);
                     if (pos != std::string::npos && pos + delimiter.length() < full_msg.length()) {
                         std::string content = full_msg.substr(pos + delimiter.length());
-                        std::cout << "Subscriber: " << content << std::endl;
+                        std::cout << "Msg: " << content << std::endl;
                     } else {
                         std::cout << "Malformed message or no content after '!>'" << std::endl;
                     }
