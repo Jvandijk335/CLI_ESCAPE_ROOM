@@ -2,6 +2,7 @@
 #include <string>
 #include <chrono>
 #include <optional>
+#include <functional>
 #include "Room.h"
 
 class PlayerSession {
@@ -10,6 +11,7 @@ public:
     PlayerSession(const std::string& username, const Room& room);
     std::string getHint();
     std::string getStatus();
+    std::string getUsername() const;
     std::string executeAction(const std::string& action, const std::string& target);
     std::string move(const std::string& direction);
     std::string joinChat();

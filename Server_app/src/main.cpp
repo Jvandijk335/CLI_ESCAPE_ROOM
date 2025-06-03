@@ -20,6 +20,13 @@ int main() {
         std::cout << "Server running. Listening for messages..." << std::endl;
 
         GameManager gameManager;
+
+        gameManager.setChatBroadcastCallback(
+            [&pusher](const std::string& message) {
+                pusher.send(zmq::buffer(message), zmq::send_flags::none);
+            }
+        );
+
         gameManager.initializeGame();
 
         int events;
@@ -49,10 +56,13 @@ int main() {
                         } else {
                             response = gameManager.handleMessage(username, command);
                         }
-                        
-                        std::string topic = "escape_room>commands>" + username + "!>" + response;
-                        pusher.send(zmq::buffer(topic), zmq::send_flags::none);
-                        std::cout << "Responded to " << username << std::endl;
+
+                        if(!response.empty()) {
+                            std::string topic = "escape_room>commands>" + username + "!>" + response;
+                            pusher.send(zmq::buffer(topic), zmq::send_flags::none);
+                            std::cout << "Responded to " << username << std::endl;
+                        }
+                       
                     }
                 }
                 else perror("recv");     
